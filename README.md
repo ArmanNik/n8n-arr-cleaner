@@ -1,6 +1,10 @@
+> [!WARNING]  
+> I vibe coded this while doom-scrolling youtube so no promises. If it nukes all your "ubuntu distros" don't blame me 🙈
+
+
 # n8n arr cleaner Workflow: Auto-Blocklist Torrents for Radarr/Sonarr
 
-This n8n workflow automates the process of finding and removing torrents with undesirable file extensions from qBittorrent. It then blocklists the release in the originating 'arr' application (Radarr or Sonarr) to prevent it from being downloaded again.
+This [n8n](https://docs.n8n.io/hosting/) workflow automates the process of finding and removing torrents with undesirable file extensions from qBittorrent. It then blocklists the release in the originating 'arr' application (Radarr or Sonarr) to prevent it from being downloaded again.
 
 ## How It Works
 
@@ -35,6 +39,11 @@ All user-configurable settings are located in the first **"ENV" (Set)** node. Op
 | `QBITTORRENT_USERNAME` | Your qBittorrent Web UI username.                     |
 | `QBITTORRENT_PASSWORD` | Your qBittorrent Web UI password.                     |
 
+
+> [!CAUTION]
+> This implementation uses http so is not particulary secure. Usenames, passwords, and keys are sent in plain text. Only use this in a safe local network. It might requre more changes before it works with https.
+
+
 ### 2. Define Unsafe Extensions
 
 Within the same **ENV** node, locate the `UNSAFE_EXTENSION` variable. Edit the JavaScript array to add or remove file extensions:
@@ -59,7 +68,4 @@ The workflow uses Gotify by default.
 After saving your configuration, enable the workflow by using the **"Active"** toggle in the top-right corner.
 
 
-
-> [!WARNING]  
-> I vibe coded this while doom-scrolling youtube so no promises. If it nukes all your "ubuntu distros" don't blame me  
 
