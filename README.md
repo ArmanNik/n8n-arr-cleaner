@@ -2,7 +2,7 @@
 > I vibe coded this while doom-scrolling youtube so no promises. If it nukes all your "ubuntu distros" don't blame me 🙈
 
 
-# n8n arr cleaner Workflow: Auto-Blocklist Torrents for Radarr/Sonarr
+# n8n arr Cleaner Workflow: Auto-Blocklist Torrents for Radarr/Sonarr
 
 This [n8n](https://docs.n8n.io/hosting/) workflow automates the process of finding and removing torrents with undesirable file extensions from qBittorrent. It then blocklists the release in the originating 'arr' application (Radarr or Sonarr) to prevent it from being downloaded again.
 
