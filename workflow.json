@@ -1,0 +1,772 @@
+{
+  "name": "n8n arrs cleaner",
+  "nodes": [
+    {
+      "parameters": {
+        "triggerTimes": {
+          "item": [
+            {
+              "mode": "everyX",
+              "value": 3
+            }
+          ]
+        }
+      },
+      "name": "Every 3 hours",
+      "type": "n8n-nodes-base.cron",
+      "typeVersion": 1,
+      "position": [-1728, -32],
+      "id": "f090a1b7-ff5f-41ce-af13-c68216f0c4e7"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $json.LOCALHOST }}:{{ $json.QBITTORRENT_PORT}}/api/v2/auth/login ",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Referer",
+              "value": "={{ $json.LOCALHOST }}:{{ $json.QBITTORRENT_PORT}}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "contentType": "form-urlencoded",
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "username",
+              "value": "={{ $json.QBITTORRENT_USERNAME }}"
+            },
+            {
+              "name": "password",
+              "value": "={{ $json.QBITTORRENT_PASSWORD }}"
+            }
+          ]
+        },
+        "options": {
+          "response": {
+            "response": {
+              "fullResponse": true
+            }
+          }
+        }
+      },
+      "name": "Login to qBittorrent",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 3,
+      "position": [-1280, -32],
+      "id": "aeaf08ab-58e4-43b1-9855-4a4a46770bd8"
+    },
+    {
+      "parameters": {
+        "url": "={{ $('ENV').item.json.LOCALHOST }}:{{ $('ENV').item.json.QBITTORRENT_PORT }}/api/v2/torrents/info",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Cookie",
+              "value": "={{ $json.headers['set-cookie'][0] }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "name": "Get All Torrents",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 3,
+      "position": [-1056, -32],
+      "id": "b2dea167-b458-40e7-9560-6fb2a35d58f6"
+    },
+    {
+      "parameters": {},
+      "name": "No bad file found",
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [-160, 64],
+      "id": "1eec064c-84a8-4fde-921f-79937bba7442"
+    },
+    {
+      "parameters": {
+        "dataType": "string",
+        "value1": "={{ $json.category }}",
+        "rules": {
+          "rules": [
+            {
+              "value2": "tv-sonarr",
+              "outputKey": "={{$('ENV').item.json.SONARR_CATEGORY_NAME}}"
+            },
+            {
+              "value2": "radarr",
+              "outputKey": "{{$('ENV').item.json.RADARR_CATEGORY_NAME}}"
+            }
+          ]
+        }
+      },
+      "name": "Switch on Category",
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 2,
+      "position": [64, -128],
+      "id": "2b938615-7b89-4378-a87c-18d413358171"
+    },
+    {
+      "parameters": {
+        "url": "={{ $('ENV').item.json.LOCALHOST }}:{{ $('ENV').item.json.RADARR_PORT }}/api/v3/queue",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "X-Api-Key ",
+              "value": "={{$('ENV').item.json.RADARR_API_KEY}}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "name": "Get Radarr Queue",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 3,
+      "position": [512, -32],
+      "id": "1fc39eff-2c69-4848-92d6-bf76b8b7724a"
+    },
+    {
+      "parameters": {
+        "url": "={{ $('ENV').item.json.LOCALHOST }}:{{ $('ENV').item.json.SONARR_PORT }}/api/v3/queue",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "X-Api-Key",
+              "value": "={{$('ENV').item.json.SONARR_API_KEY}}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "name": "Get Sonarr Queue",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 3,
+      "position": [512, -224],
+      "id": "65fe7a77-9287-489a-81ac-a1e569f09886",
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "method": "DELETE",
+        "url": "={{ $('ENV').item.json.LOCALHOST }}:{{ $('ENV').item.json.RADARR_PORT }}/api/v3/queue/{{ $json.id }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "X-Api-Key ",
+              "value": "={{$('ENV').item.json.RADARR_API_KEY}}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "id",
+              "value": "={{ $json.id }}"
+            },
+            {
+              "name": "blocklist",
+              "value": "true"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "name": "Blocklist in Radarr",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 3,
+      "position": [1408, -32],
+      "id": "57d1a6ad-0768-4964-8fbe-7988a2dc1524"
+    },
+    {
+      "parameters": {
+        "method": "DELETE",
+        "url": "={{ $('ENV').item.json.LOCALHOST }}:{{ $('ENV').item.json.SONARR_PORT }}/api/v3/queue/{{ $json.id }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "X-Api-Key",
+              "value": "={{$('ENV').item.json.SONARR_API_KEY}}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "contentType": "form-urlencoded",
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "id",
+              "value": "={{ $json.id }}"
+            },
+            {
+              "name": "blocklist",
+              "value": "true"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "name": "Blocklist in Sonarr",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 3,
+      "position": [1408, -224],
+      "id": "3eacc74e-57f9-4dd2-9609-6d6b4687f044"
+    },
+    {
+      "parameters": {
+        "message": "=Bad torrent removed & blocklisted: {{ $('Switch on Category again').item.json.name }}. It contained a file ending in \".{{ $('Switch on Category again').item.json.name.split('.').pop() }}\"",
+        "additionalFields": {},
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gotify",
+      "typeVersion": 1,
+      "position": [1632, -128],
+      "id": "a5b043de-16ec-4c2f-ae6c-1a373ecaed9b",
+      "name": "Send Gotify Alert",
+      "credentials": {
+        "gotifyApi": {
+          "id": "5mQncGqoF1i6and1",
+          "name": "Gotify account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $('ENV').item.json.LOCALHOST }}:{{ $('ENV').item.json.QBITTORRENT_PORT }}/api/v2/torrents/files",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Cookie",
+              "value": "={{ $('Login to qBittorrent').item.json.headers['set-cookie'][0] }}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "contentType": "form-urlencoded",
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "hash",
+              "value": "={{ $json.hash }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "name": "Get torrent contents",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 3,
+      "position": [-832, -32],
+      "id": "4440ec0c-db1b-4995-b702-6c8073fa4cb4"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "b7ef25df-2440-4866-a221-03287ca230bd",
+              "leftValue": "={{ $('ENV').item.json.UNSAFE_EXTENSION.some( (ext) => $json.name.toLowerCase().endsWith(ext) )}}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [-384, -32],
+      "id": "85d60886-8f4c-4580-966c-5b0fa1ab9158",
+      "name": "If bad extension found"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "854f8b73-1054-4371-ade9-77c31b790353",
+              "name": "hash",
+              "value": "={{ $('Get All Torrents').item.json.hash }}",
+              "type": "string"
+            },
+            {
+              "id": "5d27807f-406e-42e6-bbbe-e9fb73c1bf4f",
+              "name": "torrentName",
+              "value": "={{ $('Get All Torrents').item.json.name }}",
+              "type": "string"
+            },
+            {
+              "id": "25911551-c5c4-49d8-acfd-018a7f373ae9",
+              "name": "content_path",
+              "value": "={{ $('Get All Torrents').item.json.content_path }}",
+              "type": "string"
+            },
+            {
+              "id": "d74f9dc8-acc6-4c6f-8f9f-2b56aa3c0efb",
+              "name": "name",
+              "value": "={{ $json.name }}",
+              "type": "string"
+            },
+            {
+              "id": "03f5e2ad-ea94-4a5c-b982-68996825357a",
+              "name": "category",
+              "value": "={{ $('Get All Torrents').item.json.category }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [-608, -32],
+      "id": "0cbea44e-33c2-4e90-8360-5d69f9c81ed2",
+      "name": "Add hash to fields"
+    },
+    {
+      "parameters": {
+        "dataType": "string",
+        "value1": "={{ $json.category }}",
+        "rules": {
+          "rules": [
+            {
+              "value2": "tv-sonarr",
+              "outputKey": "={{$('ENV').item.json.SONARR_CATEGORY_NAME}}"
+            },
+            {
+              "value2": "radarr",
+              "outputKey": "={{$('ENV').item.json.RADARR_CATEGORY_NAME}}"
+            }
+          ]
+        }
+      },
+      "name": "Switch on Category again",
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 2,
+      "position": [1184, -128],
+      "id": "612455cf-be1f-48c8-9930-4a4baee6e548"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "854f8b73-1054-4371-ade9-77c31b790353",
+              "name": "hash",
+              "value": "={{ $('Switch on Category').item.json.hash }}",
+              "type": "string"
+            },
+            {
+              "id": "5d27807f-406e-42e6-bbbe-e9fb73c1bf4f",
+              "name": "torrentName",
+              "value": "={{ $('Switch on Category').item.json.torrentName }}",
+              "type": "string"
+            },
+            {
+              "id": "25911551-c5c4-49d8-acfd-018a7f373ae9",
+              "name": "content_path",
+              "value": "={{ $('Switch on Category').item.json.content_path }}",
+              "type": "string"
+            },
+            {
+              "id": "d74f9dc8-acc6-4c6f-8f9f-2b56aa3c0efb",
+              "name": "name",
+              "value": "={{ $('Switch on Category').item.json.name }}",
+              "type": "string"
+            },
+            {
+              "id": "03f5e2ad-ea94-4a5c-b982-68996825357a",
+              "name": "category",
+              "value": "={{ $('Switch on Category').item.json.category }}",
+              "type": "string"
+            },
+            {
+              "id": "b16c04a2-9f74-4678-b27e-113b825d3dba",
+              "name": "id",
+              "value": "={{ $json.id }}",
+              "type": "number"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [960, -128],
+      "id": "28fcfb02-fe86-485d-8697-5b2cd8e91fa9",
+      "name": "Edit fields"
+    },
+    {
+      "parameters": {
+        "fieldToSplitOut": "records",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitOut",
+      "typeVersion": 1,
+      "position": [736, -128],
+      "id": "8419267b-d720-440b-9c0a-4fa2ea89711c",
+      "name": "Split Out"
+    },
+    {
+      "parameters": {
+        "compare": "selectedFields",
+        "fieldsToCompare": "hash",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.removeDuplicates",
+      "typeVersion": 2,
+      "position": [-160, -128],
+      "id": "7b3039f7-2e4c-44de-9cb3-bc98d8fadcdf",
+      "name": "Remove Duplicates"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.limit",
+      "typeVersion": 1,
+      "position": [288, -224],
+      "id": "d0699693-cded-4d27-a518-73c852baafad",
+      "name": "Limit"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.limit",
+      "typeVersion": 1,
+      "position": [288, -32],
+      "id": "0bd14777-d3ba-4710-b7af-3f96b90e1838",
+      "name": "Limit1"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "5e13abd3-5513-4f44-a408-7ec5ee1d9e6f",
+              "name": "LOCALHOST",
+              "value": "http://localhost",
+              "type": "string"
+            },
+            {
+              "id": "12182813-41bf-47d7-801b-7eb22f6db5c1",
+              "name": "SONARR_PORT",
+              "value": "8989",
+              "type": "string"
+            },
+            {
+              "id": "22f6d6e8-2bc2-40fd-8f1c-a77bce8a6795",
+              "name": "SONARR_API_KEY",
+              "value": "CHANGE_ME",
+              "type": "string"
+            },
+            {
+              "id": "a048539b-19dd-4cb4-9c63-7c3d2430c16f",
+              "name": "SONARR_CATEGORY_NAME",
+              "value": "sonarr",
+              "type": "string"
+            },
+            {
+              "id": "a974c021-5588-44af-a18c-7eb35f6db4d2",
+              "name": "RADARR_PORT",
+              "value": "7878",
+              "type": "string"
+            },
+            {
+              "id": "01e198bc-efca-488e-9259-74897ee684d0",
+              "name": "RADARR_API_KEY",
+              "value": "CHANGE_ME",
+              "type": "string"
+            },
+            {
+              "id": "bf6de7a7-5147-4b26-8346-fa069a11a9a5",
+              "name": "RADARR_CATEGORY_NAME",
+              "value": "radarr",
+              "type": "string"
+            },
+            {
+              "id": "e6f96cad-21c1-4b56-8fca-9c66c1933456",
+              "name": "QBITTORRENT_PORT",
+              "value": "8080",
+              "type": "string"
+            },
+            {
+              "id": "1c69b126-8850-40c7-bb45-46c90206f9c0",
+              "name": "QBITTORRENT_USERNAME",
+              "value": "CHANGE_ME",
+              "type": "string"
+            },
+            {
+              "id": "8337b345-6fa1-4e29-a68a-a32e054f96e4",
+              "name": "QBITTORRENT_PASSWORD",
+              "value": "CHANGE_ME",
+              "type": "string"
+            },
+            {
+              "id": "5d87df2b-39a4-4a95-b917-a17265665593",
+              "name": "UNSAFE_EXTENSION",
+              "value": "['.lnk','.rar', '.nfo', '.r00', '.r01', '.bat', '.exe', '.ink', '.com', '.url', '.zipx', '.ps1', '.psm1', '.psd1', '.cmd', '.sh', '.rb', '.perl', '.dmg', '.js', '.src', '.arj', '.001', '.002', '.txt', '.scr' ]",
+              "type": "array"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [-1504, -32],
+      "id": "69a8135f-c93b-417d-9feb-b48ba92e8821",
+      "name": "ENV"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Every 3 hours": {
+      "main": [
+        [
+          {
+            "node": "ENV",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Login to qBittorrent": {
+      "main": [
+        [
+          {
+            "node": "Get All Torrents",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get All Torrents": {
+      "main": [
+        [
+          {
+            "node": "Get torrent contents",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Radarr Queue": {
+      "main": [
+        [
+          {
+            "node": "Split Out",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Sonarr Queue": {
+      "main": [
+        [
+          {
+            "node": "Split Out",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Blocklist in Radarr": {
+      "main": [
+        [
+          {
+            "node": "Send Gotify Alert",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Blocklist in Sonarr": {
+      "main": [
+        [
+          {
+            "node": "Send Gotify Alert",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch on Category": {
+      "main": [
+        [
+          {
+            "node": "Limit",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Limit1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get torrent contents": {
+      "main": [
+        [
+          {
+            "node": "Add hash to fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If bad extension found": {
+      "main": [
+        [
+          {
+            "node": "Remove Duplicates",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "No bad file found",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Add hash to fields": {
+      "main": [
+        [
+          {
+            "node": "If bad extension found",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch on Category again": {
+      "main": [
+        [
+          {
+            "node": "Blocklist in Sonarr",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Blocklist in Radarr",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Split Out": {
+      "main": [
+        [
+          {
+            "node": "Edit fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Remove Duplicates": {
+      "main": [
+        [
+          {
+            "node": "Switch on Category",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Limit": {
+      "main": [
+        [
+          {
+            "node": "Get Sonarr Queue",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit fields": {
+      "main": [
+        [
+          {
+            "node": "Switch on Category again",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Limit1": {
+      "main": [
+        [
+          {
+            "node": "Get Radarr Queue",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "ENV": {
+      "main": [
+        [
+          {
+            "node": "Login to qBittorrent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "29af1cea-0549-44cf-9746-d51352334351",
+  "meta": {
+    "instanceId": "4db692bf96c4dd885f5a9a03f2087aedde3452781f12afb94fac7c52cbe2e033"
+  },
+  "id": "7Aoabmn7bkCpINpC",
+  "tags": []
+}
