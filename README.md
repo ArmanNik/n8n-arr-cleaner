@@ -6,6 +6,9 @@
 
 This [n8n](https://docs.n8n.io/hosting/) workflow automates the process of finding and removing torrents with undesirable file extensions from qBittorrent. It then blocklists the release in the originating 'arr' application (Radarr or Sonarr) to prevent it from being downloaded again.
 
+<img width="2150" height="596" alt="image" src="https://github.com/user-attachments/assets/acd3d853-03bf-4263-bc12-20af5e9e2ead" />
+
+
 ## How It Works
 
 The workflow executes the following logic on a schedule:
