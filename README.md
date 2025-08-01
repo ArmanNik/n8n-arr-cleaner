@@ -56,6 +56,9 @@ Within the same **ENV** node, locate the `UNSAFE_EXTENSION` variable. Edit the J
 ['.lnk', '.rar', '.exe', '.zipx', '.scr', '.txt']
 ```
 
+> [!NOTE]  
+> Any torrent containning a "bad" file format will be removed regardless of the other files in the torrent. To avoid false positives be conservative with what you exclude.
+
 ### 3. Configure Notifications
 
 The workflow uses Gotify by default.
